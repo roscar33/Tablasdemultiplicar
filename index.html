@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Aprendamos jugando a multiplicar</title>
+    <style>
+        /* =========================================
+           VARIABLES Y CONFIGURACIÓN BASE
+           ========================================= */
+        :root {
+            --primary: #4CAF50;
+            --primary-dark: #388E3C;
+            --secondary: #2196F3;
+            --secondary-dark: #1976D2;
+            --danger: #F44336;
+            --danger-dark: #D32F2F;
+            --warning: #FFC107;
+            --warning-dark: #FFA000;
+            --background: #E3F2FD;
+            --surface: #FFFFFF;
+            --text-main: #333333;
+            --text-light: #777777;
+            --radius: 16px;
+            --shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--background);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            min-height: 100dvh; 
+            overflow: hidden;
+            margin: 0;
+        }
+
+        #app-container {
+            width: 100vw;
+            height: 100dvh;
+            max-width: 450px;
+            background-color: var(--background);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        @media (min-width: 451px) {
+            body { background-color: #bbdefb; }
+            #app-container {
+                height: 90vh;
+                aspect-ratio: 9 / 16;
+                border-radius: 24px;
+                box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            }
+        }
+
+        /* =========================================
+           ESTILOS COMUNES Y UTILIDADES
+           ========================================= */
+        .screen {
+            display: none;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            padding: 15px;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        h1, h2, h3 { color: var(--text-main); text-align: center; }
+        h1 { font-size: clamp(1.6rem, 5vw, 2.2rem); }
+        h2 { font-size: clamp(1.4rem, 4vw, 1.8rem); }
+        
+        button {
+            border: none;
+            border-radius: var(--radius);
+            padding: 12px 15px;
+            font-size: clamp(1rem, 4vw, 1.1rem);
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.1s;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+        }
+        
+        button:active { transform: translateY(4px); box-shadow: 0 0 0 rgba(0,0,0,0.2); }
+
+        .btn-primary { background-color: var(--primary); box-shadow: 0 4px 0 var(--primary-dark); }
+        .btn-secondary { background-color: var(--secondary); box-shadow: 0 4px 0 var(--secondary-dark); }
+        .btn-danger { background-color: var(--danger); box-shadow: 0 4px 0 var(--danger-dark); }
+
+        input[type="text"] {
+            padding: 12px;
+            border-radius: var(--radius);
+            border: 2px solid #ccc;
+            font-size: 1.1rem;
+            text-align: center;
+            outline: none;
+            width: 100%;
+        }
+
+        /* =========================================
+           PANTALLAS
+           ========================================= */
+        #screen-login {
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            color: white;
+        }
+
+        .login-card {
+            background: var(--surface);
+            padding: 20px;
+            border-radius: var(--radius);
+            width: 90%;
+            box-shadow: var(--shadow);
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--surface);
+            padding: 8px 12px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        .stats-badge {
+            background: #f5f5f5;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .timer-container {
+            width: 100%;
+            height: 8px;
+            background: #ddd;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+        .timer-bar {
+            height: 100%;
+            width: 100%;
+            background: var(--primary);
+            transition: width 0.1s linear;
+        }
+
+        .question-card {
+            background: var(--surface);
+            flex: 1;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 15px;
+            position: relative;
+            padding: 10px;
+        }
+        .math-problem {
+            font-size: clamp(3rem, 12vw, 4.5rem); 
+            font-weight: 800;
+            color: var(--text-main);
+            margin: 10px 0;
+        }
+        
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .option-btn {
+            font-size: clamp(1.4rem, 6vw, 1.8rem);
+            padding: 10px;
+            background-color: var(--surface);
+            color: var(--secondary-dark);
+            border: 2px solid var(--secondary);
+            box-shadow: 0 5px 0 var(--secondary-dark);
+            min-height: 70px;
+        }
+        .option-btn.correct { background-color: var(--primary); color: white; border-color: var(--primary-dark); box-shadow: 0 5px 0 var(--primary-dark); }
+        .option-btn.wrong { background-color: var(--danger); color: white; border-color: var(--danger-dark); box-shadow: 0 5px 0 var(--danger-dark); }
+
+        .progress-container {
+            margin-top: auto;
+            display: flex;
+            gap: 4px;
+            justify-content: center;
+            padding-top: 10px;
+        }
+        .progress-dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: #ccc;
+        }
+        .progress-dot.fill-correct { background: var(--primary); }
+        .progress-dot.fill-wrong { background: var(--danger); }
+
+        /* =========================================
+           MODALES Y OVERLAYS
+           ========================================= */
+        .modal-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            backdrop-filter: blur(3px);
+            padding: 10px;
+        }
+        .modal-overlay.active { display: flex; }
+        
+        .modal-content {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 15px 20px;
+            width: 95%;
+            max-width: 380px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        #feedback-message {
+            position: absolute;
+            top: 15%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: clamp(2rem, 8vw, 3rem);
+            font-weight: bold;
+            text-shadow: 2px 2px 0px white;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes popIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 50% { transform: translateX(5px); } 75% { transform: translateX(-5px); } }
+        @keyframes floatUp { 0% { opacity: 1; transform: translate(-50%, 0) scale(1); } 100% { opacity: 0; transform: translate(-50%, -30px) scale(1.2); } }
+        .shake { animation: shake 0.4s ease; } .float-anim { animation: floatUp 0.8s ease forwards; }
+
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--secondary);
+            border-radius: 50%;
+            width: 30px; height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+            display: none;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<div id="app-container">
+    <!-- PANTALLA LOGIN -->
+    <div id="screen-login" class="screen active">
+        <h1>Aprendamos jugando</h1>
+        <h1 style="color: var(--warning); margin-bottom: 20px;">a multiplicar</h1>
+        
+        <div class="login-card">
+            <h3 style="margin-bottom: 5px; color: var(--text-main);">Identificación</h3>
+            <p style="text-align: center; color: var(--text-light); font-size: 0.8rem; margin-bottom: 12px;">Ingresa tu documento completo.</p>
+            <input type="text" inputmode="numeric" id="player-id" placeholder="Ej: 1234567890" autocomplete="off">
+            <p id="login-error" style="color:var(--danger); font-size:0.8rem; text-align:center; margin-top:5px; display:none;"></p>
+            <button class="btn-primary" style="width: 100%; margin-top: 12px;" id="btn-start" onclick="iniciarJuego()">¡Empezar!</button>
+            <div id="login-loader" class="loader" style="margin-top: 15px;"></div>
+        </div>
+        <p style="margin-top: 25px; color: white; font-size: 0.75rem; text-align: center; font-weight: 500;">Aplicativo creado por Oscar Barrientos</p>
+    </div>
+
+    <!-- PANTALLA JUEGO -->
+    <div id="screen-game" class="screen">
+        <div class="game-header">
+            <div class="stats-badge">Tabla del <span id="ui-level">1</span></div>
+            <div class="stats-badge">🎓 Nota: <strong id="ui-nota">5.0</strong></div>
+        </div>
+        <div class="timer-container">
+            <div id="ui-timer-bar" class="timer-bar"></div>
+        </div>
+        <div class="question-card" id="question-card">
+            <div id="feedback-message"></div>
+            <div style="font-size: 0.9rem; color: var(--text-light); font-weight: bold;">Multiplica</div>
+            <div class="math-problem" id="ui-problem">? x ?</div>
+            <div class="progress-container" id="ui-progress"></div>
+        </div>
+        <div class="options-grid" id="ui-options">
+            <button class="option-btn" onclick="checkAnswer(0)">-</button>
+            <button class="option-btn" onclick="checkAnswer(1)">-</button>
+            <button class="option-btn" onclick="checkAnswer(2)">-</button>
+            <button class="option-btn" onclick="checkAnswer(3)">-</button>
+        </div>
+        <div class="controls-footer">
+            <button class="btn-secondary" onclick="toggleMute()" id="btn-mute">🔊 Sonido</button>
+        </div>
+    </div>
+
+    <!-- TABLA COMPLETADA -->
+    <div id="screen-level-complete" class="screen" style="justify-content: center; align-items: center; background: #e8f5e9;">
+        <h2 style="color: var(--primary-dark); margin-bottom: 10px;">¡Tabla Finalizada! 🎉</h2>
+        <div class="login-card" style="text-align: center; margin-bottom: 20px;">
+            <p>Nota en la Tabla <span id="ui-completed-table"></span>:</p>
+            <p style="font-size: 3rem; font-weight: bold; color: var(--primary-dark);" id="ui-level-nota">5.0</p>
+        </div>
+        <button class="btn-primary" style="width: 100%;" onclick="irASiguienteTabla()">Continuar ➡️</button>
+    </div>
+
+    <!-- PANTALLA FINAL -->
+    <div id="screen-final" class="screen" style="justify-content: center; align-items: center; background: #fff8e1;">
+        <h1 style="color: var(--warning-dark); margin-bottom: 15px;">¡CAMPEÓN! 🏆</h1>
+        <h3 style="margin-bottom: 25px;">Has completado el desafío (1-9).</h3>
+        <button class="btn-primary" style="width: 100%;" onclick="reiniciarApp()">Terminar 🏠</button>
+    </div>
+
+    <!-- OVERLAY INSTRUCCIONES -->
+    <div id="modal-instructions" class="modal-overlay">
+        <div class="modal-content">
+            <h2 style="color: var(--danger-dark); margin-bottom: 10px; font-size: 1.2rem;">⚠️ ¡ATENCIÓN!</h2>
+            <div style="font-size: 0.8rem; line-height: 1.2; color: var(--text-main); text-align: left;">
+                <p style="margin-bottom: 5px;">📘 <strong>1.</strong> Las tablas se resuelven personalmente.</p>
+                <p style="margin-bottom: 5px;">🎮 <strong>2.</strong> Tómalo como un juego.</p>
+                <p style="margin-bottom: 5px;">🔒 <strong>3.</strong> Cada tabla se responde una sola vez.</p>
+                <p style="margin-bottom: 5px;">⏳ <strong>4.</strong> Tienes 8 segundos por pregunta.</p>
+                <p style="margin-bottom: 5px;">🙋‍♂️ <strong>5.</strong> Si hay dudas, avísale al profe.</p>
+                <p>⭐ <strong>6.</strong> Cada error resta 0.5 puntos.</p>
+            </div>
+            <button class="btn-primary" style="width: 100%; margin-top: 15px; padding: 10px;" onclick="cerrarOverlayYEmpezar()">¡Entendido, Empezar!</button>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyB8BZNYGCSHTZuGir8wIBArqdI8PpXffBA",
+        authDomain: "juegosymas-ad2b3.firebaseapp.com",
+        projectId: "juegosymas-ad2b3",
+        storageBucket: "juegosymas-ad2b3.firebasestorage.app",
+        messagingSenderId: "363026419869",
+        appId: "1:363026419869:web:993df067cd341fcc0a0474"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const VERSION_APP = 8; // Reset seguro
+    const ESTUDIANTES = { "1032328826": "Luciana Lopera Cadavid", "1035922719": "Belén Molina Ochoa", "1067959648": "José Daniel Pacheco Barrera", "1042155250": "Antonella Casas Fernandez", "1035801483": "Dilmer Felipe Restrepo Villa", "1157463842": "Valentina Berrio Correa", "1038213324": "Dylan Guzman Correa", "1041636021": "Maximiliano Varelas Barrientos", "1072263423": "Jesús David Medina Polo" };
+
+    let state = {
+        user: null, nivelActual: 1, notaActual: 5.0, count: 0, history: [], 
+        currentQ: {}, lastMult: -1, timeLeft: 8, timer: null, muted: false, processing: false
+    };
+
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playSnd(type) {
+        if (state.muted) return; if (audioCtx.state === 'suspended') audioCtx.resume();
+        const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination);
+        const n = audioCtx.currentTime;
+        if (type==='ok'){ o.type='sine'; o.frequency.setValueAtTime(600,n); g.gain.setValueAtTime(0.2,n); o.start(); o.stop(n+0.1); }
+        else if (type==='err'){ o.type='sawtooth'; o.frequency.setValueAtTime(200,n); g.gain.setValueAtTime(0.2,n); o.start(); o.stop(n+0.2); }
+        else if (type==='win'){ o.type='triangle'; o.frequency.setValueAtTime(400,n); o.frequency.setValueAtTime(600,n+0.1); g.gain.setValueAtTime(0.2,n); o.start(); o.stop(n+0.4); }
+    }
+
+    window.iniciarJuego = async function() {
+        const id = document.getElementById('player-id').value.replace(/\D/g, '');
+        if (!ESTUDIANTES[id]) { 
+            const e = document.getElementById('login-error'); e.textContent = "ID no válido."; e.style.display = 'block'; return; 
+        }
+        
+        document.getElementById('btn-start').style.display = 'none';
+        document.getElementById('login-loader').style.display = 'block';
+        
+        await fetchUser(id, ESTUDIANTES[id]);
+        document.getElementById('login-loader').style.display = 'none';
+
+        if (state.user.nivelMaximo > 9) { showScreen('screen-final'); return; }
+        
+        state.nivelActual = state.user.nivelMaximo;
+        document.getElementById('modal-instructions').classList.add('active');
+    };
+
+    async function fetchUser(id, name) {
+        let local = JSON.parse(localStorage.getItem(`estudiante_${id}`));
+        let cloud = null;
+        try { cloud = (await getDoc(doc(db, 'multiplicaciones', id))).data(); } catch(e){}
+
+        const def = { id, nombre: name, nivelMaximo: 1, notasPorTabla: {}, appVersion: VERSION_APP, lastTeacherUpdate: 0 };
+        if (!local || local.appVersion !== VERSION_APP) local = def;
+        if (!cloud || cloud.appVersion !== VERSION_APP) cloud = def;
+
+        if (cloud.lastTeacherUpdate > local.lastTeacherUpdate) {
+            state.user = cloud;
+        } else {
+            state.user = local;
+            if (cloud.notasPorTabla) Object.assign(state.user.notasPorTabla, cloud.notasPorTabla);
+            state.user.nivelMaximo = Math.max(local.nivelMaximo, cloud.nivelMaximo);
+        }
+        localStorage.setItem(`estudiante_${id}`, JSON.stringify(state.user));
+    }
+
+    function showScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    window.cerrarOverlayYEmpezar = function() {
+        document.getElementById('modal-instructions').classList.remove('active');
+        showScreen('screen-game');
+        setTimeout(startTable, 400); 
+    };
+
+    function startTable() {
+        state.notaActual = 5.0; state.count = 0; state.history = []; state.lastMult = -1;
+        document.getElementById('ui-level').textContent = state.nivelActual;
+        updateUI();
+        nextQ();
+    }
+
+    function nextQ() {
+        state.processing = false;
+        const btns = document.querySelectorAll('.option-btn');
+        btns.forEach(b => { b.className = 'option-btn'; b.disabled = false; b.textContent = ""; });
+
+        let m; 
+        do { m = Math.floor(Math.random() * 10) + 1; } while (m === state.lastMult);
+        state.lastMult = m;
+
+        const ans = state.nivelActual * m;
+        let ops = [ans];
+        
+        // Bucle matemático seguro (evita que se pegue el juego)
+        let failsafe = 0;
+        while (ops.length < 4 && failsafe < 50) {
+            failsafe++;
+            let variacion = (Math.floor(Math.random() * 5) - 2) * state.nivelActual;
+            if (variacion === 0) variacion = state.nivelActual; 
+            let f = ans + variacion;
+            if (f <= 0) f = ans + (Math.floor(Math.random() * 3) + 1) * state.nivelActual;
+            if (!ops.includes(f)) ops.push(f);
+        }
+        // Respaldo de seguridad matemático
+        while (ops.length < 4) {
+            let extra = ans + Math.floor(Math.random() * 20) + 1;
+            if (!ops.includes(extra)) ops.push(extra);
+        }
+
+        ops.sort(() => Math.random() - 0.5);
+
+        // Actualizamos UI antes de lanzar timer
+        document.getElementById('ui-problem').textContent = `${state.nivelActual} x ${m}`;
+        btns.forEach((b, i) => b.textContent = ops[i]);
+        state.currentQ = { ans, ops };
+
+        startTimer();
+    }
+
+    function startTimer() {
+        if (state.timer) { clearInterval(state.timer); state.timer = null; }
+        
+        state.timeLeft = 8.0;
+        const bar = document.getElementById('ui-timer-bar');
+        bar.style.width = '100%';
+        
+        state.timer = setInterval(() => {
+            if (state.processing) { clearInterval(state.timer); state.timer = null; return; }
+            state.timeLeft -= 0.1;
+            bar.style.width = (state.timeLeft / 8 * 100) + '%';
+            if (state.timeLeft <= 0) { handleAns(false); }
+        }, 100);
+    }
+
+    window.checkAnswer = function(i) {
+        if (state.processing) return;
+        handleAns(state.currentQ.ops[i] === state.currentQ.ans, i);
+    };
+
+    function handleAns(isOk, i) {
+        state.processing = true;
+        if (state.timer) { clearInterval(state.timer); state.timer = null; }
+
+        const btns = document.querySelectorAll('.option-btn');
+        btns.forEach(b => b.disabled = true);
+
+        const correctIdx = state.currentQ.ops.indexOf(state.currentQ.ans);
+        if(correctIdx >= 0) btns[correctIdx].classList.add('correct');
+
+        if (isOk) {
+            playSnd('ok'); feed("¡Bien!", "var(--primary)");
+        } else {
+            if(i !== undefined) btns[i].classList.add('wrong');
+            playSnd('err');
+            state.notaActual = Math.max(0, state.notaActual - 0.5);
+            feed("-0.5", "var(--danger)");
+            document.getElementById('question-card').classList.add('shake');
+            setTimeout(() => document.getElementById('question-card').classList.remove('shake'), 400);
+        }
+        
+        state.history.push(isOk);
+        state.count++;
+        updateUI();
+
+        setTimeout(() => {
+            if (state.count < 10) nextQ();
+            else finishTable();
+        }, 1400);
+    }
+
+    async function finishTable() {
+        state.user.notasPorTabla[state.nivelActual] = state.notaActual;
+        state.user.nivelMaximo++;
+        localStorage.setItem(`estudiante_${state.user.id}`, JSON.stringify(state.user));
+        if (db) {
+            try { await setDoc(doc(db, 'multiplicaciones', state.user.id), state.user, { merge: true }); } catch(e){}
+        }
+        
+        playSnd('win');
+        document.getElementById('ui-completed-table').textContent = state.nivelActual;
+        document.getElementById('ui-level-nota').textContent = state.notaActual.toFixed(1);
+        showScreen('screen-level-complete');
+    }
+
+    window.irASiguienteTabla = function() {
+        if (state.user.nivelMaximo > 9) showScreen('screen-final');
+        else {
+            state.nivelActual = state.user.nivelMaximo;
+            showScreen('screen-game');
+            setTimeout(startTable, 300);
+        }
+    };
+
+    function updateUI() {
+        document.getElementById('ui-nota').textContent = state.notaActual.toFixed(1);
+        const d = document.getElementById('ui-progress'); d.innerHTML = "";
+        for (let i=0; i<10; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'progress-dot' + (i < state.history.length ? (state.history[i] ? ' fill-correct' : ' fill-wrong') : '');
+            d.appendChild(dot);
+        }
+    }
+
+    function feed(t, c) {
+        const f = document.getElementById('feedback-message');
+        f.textContent = t; f.style.color = c;
+        f.classList.remove('float-anim'); void f.offsetWidth; f.classList.add('float-anim');
+    }
+
+    window.toggleMute = function() { state.muted = !state.muted; document.getElementById('btn-mute').textContent = state.muted ? '🔇' : '🔊 Sonido'; };
+    window.reiniciarApp = () => location.reload();
+</script>
+</body>
+</html>
