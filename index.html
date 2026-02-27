@@ -104,7 +104,7 @@
         .btn-secondary { background-color: var(--secondary); box-shadow: 0 4px 0 var(--secondary-dark); }
         .btn-danger { background-color: var(--danger); box-shadow: 0 4px 0 var(--danger-dark); }
 
-        input[type="text"] {
+        input[type="text"], input[type="number"] {
             padding: 12px;
             border-radius: var(--radius);
             border: 2px solid #ccc;
@@ -186,23 +186,52 @@
             margin: 10px 0;
         }
         
-        .options-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
+        /* ESTILOS NUEVOS PARA EL INPUT Y BOTÓN */
+        .answer-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
             margin-bottom: 15px;
+            width: 100%;
+            padding: 0 10px;
         }
-        .option-btn {
-            font-size: clamp(1.4rem, 6vw, 1.8rem);
+
+        #answer-input {
+            font-size: clamp(2rem, 8vw, 2.8rem);
             padding: 10px;
-            background-color: var(--surface);
+            border-radius: var(--radius);
+            border: 3px solid var(--secondary);
+            text-align: center;
             color: var(--secondary-dark);
-            border: 2px solid var(--secondary);
-            box-shadow: 0 5px 0 var(--secondary-dark);
-            min-height: 70px;
+            font-weight: bold;
+            outline: none;
+            transition: all 0.2s ease;
+            width: 100%;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
         }
-        .option-btn.correct { background-color: var(--primary); color: white; border-color: var(--primary-dark); box-shadow: 0 5px 0 var(--primary-dark); }
-        .option-btn.wrong { background-color: var(--danger); color: white; border-color: var(--danger-dark); box-shadow: 0 5px 0 var(--danger-dark); }
+
+        #answer-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(76, 175, 80, 0.3);
+        }
+
+        #answer-input.correct { 
+            border-color: var(--primary); 
+            background-color: var(--primary);
+            color: white; 
+        }
+
+        #answer-input.wrong { 
+            border-color: var(--danger); 
+            background-color: var(--danger); 
+            color: white;
+        }
+
+        .submit-btn {
+            font-size: clamp(1.4rem, 6vw, 1.6rem);
+            padding: 15px;
+            width: 100%;
+        }
 
         .progress-container {
             margin-top: auto;
@@ -281,7 +310,6 @@
 <body>
 
 <div id="app-container">
-    <!-- PANTALLA LOGIN -->
     <div id="screen-login" class="screen active">
         <h1>Aprendamos jugando</h1>
         <h1 style="color: var(--warning); margin-bottom: 20px;">a multiplicar</h1>
@@ -297,7 +325,6 @@
         <p style="margin-top: 25px; color: white; font-size: 0.75rem; text-align: center; font-weight: 500;">Aplicativo creado por Oscar Barrientos</p>
     </div>
 
-    <!-- PANTALLA JUEGO -->
     <div id="screen-game" class="screen">
         <div class="game-header">
             <div class="stats-badge">Tabla del <span id="ui-level">1</span></div>
@@ -312,18 +339,17 @@
             <div class="math-problem" id="ui-problem">? x ?</div>
             <div class="progress-container" id="ui-progress"></div>
         </div>
-        <div class="options-grid" id="ui-options">
-            <button class="option-btn" onclick="checkAnswer(0)">-</button>
-            <button class="option-btn" onclick="checkAnswer(1)">-</button>
-            <button class="option-btn" onclick="checkAnswer(2)">-</button>
-            <button class="option-btn" onclick="checkAnswer(3)">-</button>
+        
+        <div class="answer-container" id="ui-options">
+            <input type="number" inputmode="numeric" id="answer-input" placeholder="?" autocomplete="off" onkeydown="if(event.key === 'Enter') checkTypedAnswer()">
+            <button class="btn-primary submit-btn" id="btn-submit" onclick="checkTypedAnswer()">Comprobar</button>
         </div>
+
         <div class="controls-footer">
             <button class="btn-secondary" onclick="toggleMute()" id="btn-mute">🔊 Sonido</button>
         </div>
     </div>
 
-    <!-- TABLA COMPLETADA -->
     <div id="screen-level-complete" class="screen" style="justify-content: center; align-items: center; background: #e8f5e9;">
         <h2 style="color: var(--primary-dark); margin-bottom: 10px;">¡Tabla Finalizada! 🎉</h2>
         <div class="login-card" style="text-align: center; margin-bottom: 20px;">
@@ -333,19 +359,17 @@
         <button class="btn-primary" style="width: 100%;" onclick="irASiguienteTabla()">Continuar ➡️</button>
     </div>
 
-    <!-- PANTALLA FINAL -->
     <div id="screen-final" class="screen" style="justify-content: center; align-items: center; background: #fff8e1;">
         <h1 style="color: var(--warning-dark); margin-bottom: 15px;">¡CAMPEÓN! 🏆</h1>
         <h3 style="margin-bottom: 25px;">Has completado el desafío (1-9).</h3>
         <button class="btn-primary" style="width: 100%;" onclick="reiniciarApp()">Terminar 🏠</button>
     </div>
 
-    <!-- OVERLAY INSTRUCCIONES -->
     <div id="modal-instructions" class="modal-overlay">
         <div class="modal-content">
             <h2 style="color: var(--danger-dark); margin-bottom: 10px; font-size: 1.2rem;">⚠️ ¡ATENCIÓN!</h2>
             <div style="font-size: 0.8rem; line-height: 1.2; color: var(--text-main); text-align: left;">
-                <p style="margin-bottom: 5px;">📘 <strong>1.</strong> Las tablas se resuelven personalmente.</p>
+                <p style="margin-bottom: 5px;">📘 <strong>1.</strong> Escribe la respuesta correcta.</p>
                 <p style="margin-bottom: 5px;">🎮 <strong>2.</strong> Tómalo como un juego.</p>
                 <p style="margin-bottom: 5px;">🔒 <strong>3.</strong> Cada tabla se responde una sola vez.</p>
                 <p style="margin-bottom: 5px;">⏳ <strong>4.</strong> Tienes 8 segundos por pregunta.</p>
@@ -372,7 +396,7 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const VERSION_APP = 8; // Reset seguro
+    const VERSION_APP = 9; // Subimos la versión a 9 para borrar la caché rota
     const ESTUDIANTES = { "1032328826": "Luciana Lopera Cadavid", "1035922719": "Belén Molina Ochoa", "1067959648": "José Daniel Pacheco Barrera", "1042155250": "Antonella Casas Fernandez", "1035801483": "Dilmer Felipe Restrepo Villa", "1157463842": "Valentina Berrio Correa", "1038213324": "Dylan Guzman Correa", "1041636021": "Maximiliano Varelas Barrientos", "1072263423": "Jesús David Medina Polo" };
 
     let state = {
@@ -382,16 +406,24 @@
 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     function playSnd(type) {
-        if (state.muted) return; if (audioCtx.state === 'suspended') audioCtx.resume();
-        const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination);
-        const n = audioCtx.currentTime;
-        if (type==='ok'){ o.type='sine'; o.frequency.setValueAtTime(600,n); g.gain.setValueAtTime(0.2,n); o.start(); o.stop(n+0.1); }
-        else if (type==='err'){ o.type='sawtooth'; o.frequency.setValueAtTime(200,n); g.gain.setValueAtTime(0.2,n); o.start(); o.stop(n+0.2); }
-        else if (type==='win'){ o.type='triangle'; o.frequency.setValueAtTime(400,n); o.frequency.setValueAtTime(600,n+0.1); g.gain.setValueAtTime(0.2,n); o.start(); o.stop(n+0.4); }
+        if (state.muted) return; 
+        try {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination);
+            const n = audioCtx.currentTime;
+            if (type==='ok'){ o.type='sine'; o.frequency.setValueAtTime(600,n); g.gain.setValueAtTime(0.2,n); o.start(); o.stop(n+0.1); }
+            else if (type==='err'){ o.type='sawtooth'; o.frequency.setValueAtTime(200,n); g.gain.setValueAtTime(0.2,n); o.start(); o.stop(n+0.2); }
+            else if (type==='win'){ o.type='triangle'; o.frequency.setValueAtTime(400,n); o.frequency.setValueAtTime(600,n+0.1); g.gain.setValueAtTime(0.2,n); o.start(); o.stop(n+0.4); }
+        } catch(e) { }
     }
 
     window.iniciarJuego = async function() {
-        const id = document.getElementById('player-id').value.replace(/\D/g, '');
+        const idField = document.getElementById('player-id');
+        const id = idField.value.replace(/\D/g, '');
+        
+        // CRUCIAL: Cerrar el teclado de ingreso para no bloquear la pantalla en móviles
+        idField.blur(); 
+
         if (!ESTUDIANTES[id]) { 
             const e = document.getElementById('login-error'); e.textContent = "ID no válido."; e.style.display = 'block'; return; 
         }
@@ -411,7 +443,16 @@
     async function fetchUser(id, name) {
         let local = JSON.parse(localStorage.getItem(`estudiante_${id}`));
         let cloud = null;
-        try { cloud = (await getDoc(doc(db, 'multiplicaciones', id))).data(); } catch(e){}
+        if (db) {
+            try {
+                const fetchPromise = getDoc(doc(db, 'multiplicaciones', id));
+                const timeoutPromise = new Promise(resolve => setTimeout(() => resolve(null), 3000));
+                const docSnap = await Promise.race([fetchPromise, timeoutPromise]);
+                if (docSnap && docSnap.exists && docSnap.exists()) {
+                    cloud = docSnap.data();
+                }
+            } catch(e) { }
+        }
 
         const def = { id, nombre: name, nivelMaximo: 1, notasPorTabla: {}, appVersion: VERSION_APP, lastTeacherUpdate: 0 };
         if (!local || local.appVersion !== VERSION_APP) local = def;
@@ -424,7 +465,11 @@
             if (cloud.notasPorTabla) Object.assign(state.user.notasPorTabla, cloud.notasPorTabla);
             state.user.nivelMaximo = Math.max(local.nivelMaximo, cloud.nivelMaximo);
         }
-        localStorage.setItem(`estudiante_${id}`, JSON.stringify(state.user));
+        
+        // Escudo de datos por si acaso
+        if (!state.user.notasPorTabla) state.user.notasPorTabla = {};
+        
+        try { localStorage.setItem(`estudiante_${id}`, JSON.stringify(state.user)); } catch(e){}
     }
 
     function showScreen(id) {
@@ -447,40 +492,27 @@
 
     function nextQ() {
         state.processing = false;
-        const btns = document.querySelectorAll('.option-btn');
-        btns.forEach(b => { b.className = 'option-btn'; b.disabled = false; b.textContent = ""; });
+        
+        const inputField = document.getElementById('answer-input');
+        const submitBtn = document.getElementById('btn-submit');
+        inputField.value = "";
+        inputField.className = "";
+        inputField.readOnly = false; 
+        submitBtn.disabled = false;
 
         let m; 
         do { m = Math.floor(Math.random() * 10) + 1; } while (m === state.lastMult);
         state.lastMult = m;
 
         const ans = state.nivelActual * m;
-        let ops = [ans];
-        
-        // Bucle matemático seguro (evita que se pegue el juego)
-        let failsafe = 0;
-        while (ops.length < 4 && failsafe < 50) {
-            failsafe++;
-            let variacion = (Math.floor(Math.random() * 5) - 2) * state.nivelActual;
-            if (variacion === 0) variacion = state.nivelActual; 
-            let f = ans + variacion;
-            if (f <= 0) f = ans + (Math.floor(Math.random() * 3) + 1) * state.nivelActual;
-            if (!ops.includes(f)) ops.push(f);
-        }
-        // Respaldo de seguridad matemático
-        while (ops.length < 4) {
-            let extra = ans + Math.floor(Math.random() * 20) + 1;
-            if (!ops.includes(extra)) ops.push(extra);
-        }
-
-        ops.sort(() => Math.random() - 0.5);
-
-        // Actualizamos UI antes de lanzar timer
         document.getElementById('ui-problem').textContent = `${state.nivelActual} x ${m}`;
-        btns.forEach((b, i) => b.textContent = ops[i]);
-        state.currentQ = { ans, ops };
+        state.currentQ = { ans };
 
         startTimer();
+        
+        if(document.activeElement !== inputField) {
+            inputField.focus();
+        }
     }
 
     function startTimer() {
@@ -494,29 +526,41 @@
             if (state.processing) { clearInterval(state.timer); state.timer = null; return; }
             state.timeLeft -= 0.1;
             bar.style.width = (state.timeLeft / 8 * 100) + '%';
+            
             if (state.timeLeft <= 0) { handleAns(false); }
         }, 100);
     }
 
-    window.checkAnswer = function(i) {
+    window.checkTypedAnswer = function() {
         if (state.processing) return;
-        handleAns(state.currentQ.ops[i] === state.currentQ.ans, i);
+        const inputField = document.getElementById('answer-input');
+        
+        if(inputField.value.trim() === "") {
+            handleAns(false);
+            return;
+        }
+
+        const userAns = parseInt(inputField.value, 10);
+        const isOk = (userAns === state.currentQ.ans);
+        handleAns(isOk);
     };
 
-    function handleAns(isOk, i) {
+    function handleAns(isOk) {
         state.processing = true;
         if (state.timer) { clearInterval(state.timer); state.timer = null; }
 
-        const btns = document.querySelectorAll('.option-btn');
-        btns.forEach(b => b.disabled = true);
-
-        const correctIdx = state.currentQ.ops.indexOf(state.currentQ.ans);
-        if(correctIdx >= 0) btns[correctIdx].classList.add('correct');
+        const inputField = document.getElementById('answer-input');
+        const submitBtn = document.getElementById('btn-submit');
+        
+        inputField.readOnly = true; 
+        submitBtn.disabled = true;
 
         if (isOk) {
+            inputField.classList.add('correct');
             playSnd('ok'); feed("¡Bien!", "var(--primary)");
         } else {
-            if(i !== undefined) btns[i].classList.add('wrong');
+            inputField.classList.add('wrong');
+            inputField.value = state.currentQ.ans; 
             playSnd('err');
             state.notaActual = Math.max(0, state.notaActual - 0.5);
             feed("-0.5", "var(--danger)");
@@ -534,23 +578,39 @@
         }, 1400);
     }
 
-    async function finishTable() {
-        state.user.notasPorTabla[state.nivelActual] = state.notaActual;
-        state.user.nivelMaximo++;
-        localStorage.setItem(`estudiante_${state.user.id}`, JSON.stringify(state.user));
-        if (db) {
-            try { await setDoc(doc(db, 'multiplicaciones', state.user.id), state.user, { merge: true }); } catch(e){}
+    function finishTable() {
+        // CRUCIAL PARA EVITAR CONGELAMIENTOS: Quitar el foco del input para cerrar el teclado del celular ANTES de cambiar de pantalla.
+        document.getElementById('answer-input').blur();
+
+        try {
+            if (!state.user.notasPorTabla) state.user.notasPorTabla = {};
+            state.user.notasPorTabla[state.nivelActual] = state.notaActual;
+            state.user.nivelMaximo++;
+            
+            try { localStorage.setItem(`estudiante_${state.user.id}`, JSON.stringify(state.user)); } catch(e){}
+
+            if (db) {
+                try {
+                    // Nos aseguramos de que el ID pase como texto siempre
+                    setDoc(doc(db, 'multiplicaciones', String(state.user.id)), state.user, { merge: true }).catch(() => {});
+                } catch(e){}
+            }
+            
+            playSnd('win');
+            document.getElementById('ui-completed-table').textContent = state.nivelActual;
+            document.getElementById('ui-level-nota').textContent = state.notaActual.toFixed(1);
+            showScreen('screen-level-complete');
+        } catch(error) {
+            // Escudo final: Si todo falla, fuerza la pantalla para que no se tranque la app
+            console.error("Error al finalizar:", error);
+            showScreen('screen-level-complete');
         }
-        
-        playSnd('win');
-        document.getElementById('ui-completed-table').textContent = state.nivelActual;
-        document.getElementById('ui-level-nota').textContent = state.notaActual.toFixed(1);
-        showScreen('screen-level-complete');
     }
 
     window.irASiguienteTabla = function() {
-        if (state.user.nivelMaximo > 9) showScreen('screen-final');
-        else {
+        if (state.user.nivelMaximo > 9) {
+            showScreen('screen-final');
+        } else {
             state.nivelActual = state.user.nivelMaximo;
             showScreen('screen-game');
             setTimeout(startTable, 300);
