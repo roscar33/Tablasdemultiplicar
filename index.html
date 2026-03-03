@@ -186,7 +186,6 @@
             margin: 10px 0;
         }
         
-        /* ESTILOS NUEVOS PARA EL INPUT Y BOTÓN */
         .answer-container {
             display: flex;
             flex-direction: column;
@@ -365,6 +364,14 @@
         <button class="btn-primary" style="width: 100%;" onclick="reiniciarApp()">Terminar 🏠</button>
     </div>
 
+    <div id="screen-closed" class="screen" style="justify-content: center; align-items: center; background: #ffebee;">
+        <h1 style="color: var(--danger-dark); margin-bottom: 20px;">🔒 Actividad Cerrada</h1>
+        <div class="login-card" style="text-align: center;">
+            <p style="color: var(--text-main); font-size: 1.1rem; margin-bottom: 10px; font-weight: bold;">El profesor ha cerrado esta actividad.</p>
+            <p style="color: var(--text-light); font-size: 0.9rem;">Ya no se aceptan más respuestas en este momento. Revisa con tu docente.</p>
+        </div>
+    </div>
+
     <div id="modal-instructions" class="modal-overlay">
         <div class="modal-content">
             <h2 style="color: var(--danger-dark); margin-bottom: 10px; font-size: 1.2rem;">⚠️ ¡ATENCIÓN!</h2>
@@ -383,7 +390,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyB8BZNYGCSHTZuGir8wIBArqdI8PpXffBA",
@@ -396,13 +403,30 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const VERSION_APP = 9; // Subimos la versión a 9 para borrar la caché rota
+    const VERSION_APP = 9; 
     const ESTUDIANTES = { "1032328826": "Luciana Lopera Cadavid", "1035922719": "Belén Molina Ochoa", "1067959648": "José Daniel Pacheco Barrera", "1042155250": "Antonella Casas Fernandez", "1035801483": "Dilmer Felipe Restrepo Villa", "1157463842": "Valentina Berrio Correa", "1038213324": "Dylan Guzman Correa", "1041636021": "Maximiliano Varelas Barrientos", "1072263423": "Jesús David Medina Polo" };
 
     let state = {
         user: null, nivelActual: 1, notaActual: 5.0, count: 0, history: [], 
         currentQ: {}, lastMult: -1, timeLeft: 8, timer: null, muted: false, processing: false
     };
+
+    // Escuchar el estado de la actividad en tiempo real
+    const configRef = doc(db, 'configuracion', 'juego_multiplicaciones');
+    onSnapshot(configRef, (docSnap) => {
+        if (docSnap.exists() && docSnap.data().actividadAbierta === false) {
+            // Si el profesor cierra, bloqueamos todo inmediatamente
+            state.processing = true; 
+            if (state.timer) { clearInterval(state.timer); state.timer = null; }
+            document.getElementById('modal-instructions').classList.remove('active');
+            showScreen('screen-closed');
+        } else {
+            // Si el profesor la vuelve a abrir y estaban en la pantalla de bloqueo, recargamos la app
+            if (document.getElementById('screen-closed').classList.contains('active')) {
+                location.reload();
+            }
+        }
+    });
 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     function playSnd(type) {
@@ -421,7 +445,6 @@
         const idField = document.getElementById('player-id');
         const id = idField.value.replace(/\D/g, '');
         
-        // CRUCIAL: Cerrar el teclado de ingreso para no bloquear la pantalla en móviles
         idField.blur(); 
 
         if (!ESTUDIANTES[id]) { 
@@ -466,7 +489,6 @@
             state.user.nivelMaximo = Math.max(local.nivelMaximo, cloud.nivelMaximo);
         }
         
-        // Escudo de datos por si acaso
         if (!state.user.notasPorTabla) state.user.notasPorTabla = {};
         
         try { localStorage.setItem(`estudiante_${id}`, JSON.stringify(state.user)); } catch(e){}
@@ -579,7 +601,6 @@
     }
 
     function finishTable() {
-        // CRUCIAL PARA EVITAR CONGELAMIENTOS: Quitar el foco del input para cerrar el teclado del celular ANTES de cambiar de pantalla.
         document.getElementById('answer-input').blur();
 
         try {
@@ -591,7 +612,6 @@
 
             if (db) {
                 try {
-                    // Nos aseguramos de que el ID pase como texto siempre
                     setDoc(doc(db, 'multiplicaciones', String(state.user.id)), state.user, { merge: true }).catch(() => {});
                 } catch(e){}
             }
@@ -601,7 +621,6 @@
             document.getElementById('ui-level-nota').textContent = state.notaActual.toFixed(1);
             showScreen('screen-level-complete');
         } catch(error) {
-            // Escudo final: Si todo falla, fuerza la pantalla para que no se tranque la app
             console.error("Error al finalizar:", error);
             showScreen('screen-level-complete');
         }
