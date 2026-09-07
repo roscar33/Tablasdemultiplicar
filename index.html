@@ -1,659 +1,207 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Aprendamos jugando a multiplicar</title>
-    <style>
-        /* =========================================
-           VARIABLES Y CONFIGURACIÓN BASE
-           ========================================= */
-        :root {
-            --primary: #4CAF50;
-            --primary-dark: #388E3C;
-            --secondary: #2196F3;
-            --secondary-dark: #1976D2;
-            --danger: #F44336;
-            --danger-dark: #D32F2F;
-            --warning: #FFC107;
-            --warning-dark: #FFA000;
-            --background: #E3F2FD;
-            --surface: #FFFFFF;
-            --text-main: #333333;
-            --text-light: #777777;
-            --radius: 16px;
-            --shadow: 0 8px 16px rgba(0,0,0,0.1);
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        body {
-            background-color: var(--background);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            min-height: 100dvh; 
-            overflow: hidden;
-            margin: 0;
-        }
-
-        #app-container {
-            width: 100vw;
-            height: 100dvh;
-            max-width: 450px;
-            background-color: var(--background);
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        @media (min-width: 451px) {
-            body { background-color: #bbdefb; }
-            #app-container {
-                height: 90vh;
-                aspect-ratio: 9 / 16;
-                border-radius: 24px;
-                box-shadow: 0 0 20px rgba(0,0,0,0.2);
-            }
-        }
-
-        /* =========================================
-           ESTILOS COMUNES Y UTILIDADES
-           ========================================= */
-        .screen {
-            display: none;
-            flex-direction: column;
-            width: 100%;
-            height: 100%;
-            padding: 15px;
-            animation: fadeIn 0.4s ease;
-        }
-
-        .screen.active {
-            display: flex;
-        }
-
-        h1, h2, h3 { color: var(--text-main); text-align: center; }
-        h1 { font-size: clamp(1.6rem, 5vw, 2.2rem); }
-        h2 { font-size: clamp(1.4rem, 4vw, 1.8rem); }
-        
-        button {
-            border: none;
-            border-radius: var(--radius);
-            padding: 12px 15px;
-            font-size: clamp(1rem, 4vw, 1.1rem);
-            font-weight: bold;
-            color: white;
-            cursor: pointer;
-            transition: transform 0.1s, box-shadow 0.1s;
-            box-shadow: 0 4px 0 rgba(0,0,0,0.2);
-        }
-        
-        button:active { transform: translateY(4px); box-shadow: 0 0 0 rgba(0,0,0,0.2); }
-
-        .btn-primary { background-color: var(--primary); box-shadow: 0 4px 0 var(--primary-dark); }
-        .btn-secondary { background-color: var(--secondary); box-shadow: 0 4px 0 var(--secondary-dark); }
-        .btn-danger { background-color: var(--danger); box-shadow: 0 4px 0 var(--danger-dark); }
-
-        input[type="text"], input[type="number"] {
-            padding: 12px;
-            border-radius: var(--radius);
-            border: 2px solid #ccc;
-            font-size: 1.1rem;
-            text-align: center;
-            outline: none;
-            width: 100%;
-        }
-
-        /* =========================================
-           PANTALLAS
-           ========================================= */
-        #screen-login {
-            justify-content: center;
-            align-items: center;
-            background: linear-gradient(135deg, var(--secondary), var(--primary));
-            color: white;
-        }
-
-        .login-card {
-            background: var(--surface);
-            padding: 20px;
-            border-radius: var(--radius);
-            width: 90%;
-            box-shadow: var(--shadow);
-        }
-
-        .game-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: var(--surface);
-            padding: 8px 12px;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            margin-bottom: 10px;
-            font-weight: bold;
-        }
-        
-        .stats-badge {
-            background: #f5f5f5;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-        }
-        
-        .timer-container {
-            width: 100%;
-            height: 8px;
-            background: #ddd;
-            border-radius: 4px;
-            margin-bottom: 15px;
-            overflow: hidden;
-        }
-        .timer-bar {
-            height: 100%;
-            width: 100%;
-            background: var(--primary);
-            transition: width 0.1s linear;
-        }
-
-        .question-card {
-            background: var(--surface);
-            flex: 1;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 15px;
-            position: relative;
-            padding: 10px;
-        }
-        .math-problem {
-            font-size: clamp(3rem, 12vw, 4.5rem); 
-            font-weight: 800;
-            color: var(--text-main);
-            margin: 10px 0;
-        }
-        
-        .answer-container {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-bottom: 15px;
-            width: 100%;
-            padding: 0 10px;
-        }
-
-        #answer-input {
-            font-size: clamp(2rem, 8vw, 2.8rem);
-            padding: 10px;
-            border-radius: var(--radius);
-            border: 3px solid var(--secondary);
-            text-align: center;
-            color: var(--secondary-dark);
-            font-weight: bold;
-            outline: none;
-            transition: all 0.2s ease;
-            width: 100%;
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
-        }
-
-        #answer-input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 15px rgba(76, 175, 80, 0.3);
-        }
-
-        #answer-input.correct { 
-            border-color: var(--primary); 
-            background-color: var(--primary);
-            color: white; 
-        }
-
-        #answer-input.wrong { 
-            border-color: var(--danger); 
-            background-color: var(--danger); 
-            color: white;
-        }
-
-        .submit-btn {
-            font-size: clamp(1.4rem, 6vw, 1.6rem);
-            padding: 15px;
-            width: 100%;
-        }
-
-        .progress-container {
-            margin-top: auto;
-            display: flex;
-            gap: 4px;
-            justify-content: center;
-            padding-top: 10px;
-        }
-        .progress-dot {
-            width: 10px; height: 10px;
-            border-radius: 50%;
-            background: #ccc;
-        }
-        .progress-dot.fill-correct { background: var(--primary); }
-        .progress-dot.fill-wrong { background: var(--danger); }
-
-        /* =========================================
-           MODALES Y OVERLAYS
-           ========================================= */
-        .modal-overlay {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.7);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-            backdrop-filter: blur(3px);
-            padding: 10px;
-        }
-        .modal-overlay.active { display: flex; }
-        
-        .modal-content {
-            background: var(--surface);
-            border-radius: var(--radius);
-            padding: 15px 20px;
-            width: 95%;
-            max-width: 380px;
-            max-height: 85vh;
-            overflow-y: auto;
-            box-shadow: var(--shadow);
-            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        #feedback-message {
-            position: absolute;
-            top: 15%;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: clamp(2rem, 8vw, 3rem);
-            font-weight: bold;
-            text-shadow: 2px 2px 0px white;
-            opacity: 0;
-            pointer-events: none;
-            z-index: 50;
-        }
-
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes popIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 50% { transform: translateX(5px); } 75% { transform: translateX(-5px); } }
-        @keyframes floatUp { 0% { opacity: 1; transform: translate(-50%, 0) scale(1); } 100% { opacity: 0; transform: translate(-50%, -30px) scale(1.2); } }
-        .shake { animation: shake 0.4s ease; } .float-anim { animation: floatUp 0.8s ease forwards; }
-
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--secondary);
-            border-radius: 50%;
-            width: 30px; height: 30px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-            display: none;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#4f35c7">
+<title>Panel de Control Docente · Multiplicación</title>
+<style>
+:root{--ink:#252044;--muted:#6d6880;--purple:#5638d3;--purple2:#3c259e;--lilac:#efebff;--orange:#ffbf47;--green:#117847;--red:#b52b47;--blue:#1476a8;--line:#ded9ef;--bg:#f5f4fb;--card:#fff;--shadow:#e6e1f4}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-rounded,"Trebuchet MS",Arial,sans-serif;line-height:1.45}button,input,select{font:inherit}button{cursor:pointer}button:disabled{cursor:not-allowed;opacity:.55}h1,h2,h3,p{margin:0}a{color:inherit}.wrap{width:min(1380px,calc(100% - 28px));margin:auto}.top{background:linear-gradient(120deg,#2b1c77,#6446dc);color:#fff;padding:24px 0 28px;box-shadow:0 5px 20px #30225a33}.top-row{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}.brand{display:flex;align-items:center;gap:13px}.mark{width:49px;height:49px;border-radius:16px;background:var(--orange);color:#4b3100;display:grid;place-items:center;font-weight:1000;font-size:1.7rem;transform:rotate(-5deg)}.brand h1{font-size:clamp(1.45rem,3vw,2.15rem);letter-spacing:-.035em}.brand p{color:#e8e2ff;font-size:.92rem;margin-top:4px}.status{display:flex;align-items:center;gap:9px;background:#ffffff16;border:1px solid #ffffff35;border-radius:999px;padding:9px 14px;font-weight:800;font-size:.88rem}.dot{width:10px;height:10px;border-radius:50%;background:#ffd24b;box-shadow:0 0 0 4px #ffd24b26}.dot.ok{background:#63e39e;box-shadow:0 0 0 4px #63e39e26}.dot.bad{background:#ff8296;box-shadow:0 0 0 4px #ff829626}.toolbar{margin-top:20px;display:flex;gap:10px;flex-wrap:wrap}.tab{border:1px solid #ffffff40;background:#ffffff10;color:#fff;padding:9px 14px;border-radius:12px;font-weight:800}.tab.active{background:#fff;color:#3a248d}.main{padding:24px 0 40px}.view{display:none}.view.active{display:block}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:18px}.card{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:0 5px 0 var(--shadow);padding:21px}.span-4{grid-column:span 4}.span-5{grid-column:span 5}.span-6{grid-column:span 6}.span-7{grid-column:span 7}.span-8{grid-column:span 8}.span-12{grid-column:span 12}.card h2{font-size:1.22rem;margin-bottom:6px}.card>.sub{color:var(--muted);font-size:.9rem;margin-bottom:18px}.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}.kpi{background:#fff;border:1px solid var(--line);border-radius:18px;padding:17px}.kpi strong{font-size:1.8rem;display:block;letter-spacing:-.04em}.kpi span{color:var(--muted);font-size:.83rem;font-weight:700}.kpi.good strong{color:var(--green)}.kpi.warn strong{color:#a66600}.control-row{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;padding:14px 0;border-bottom:1px dashed var(--line)}.control-row:last-child{border-bottom:0}.control-row strong{display:block}.control-row small{display:block;color:var(--muted);margin-top:3px}.switch{position:relative;width:52px;height:30px;display:inline-block}.switch input{opacity:0;width:0;height:0}.slider{position:absolute;inset:0;border-radius:999px;background:#c9c4d6;transition:.18s}.slider:before{content:"";position:absolute;width:22px;height:22px;left:4px;top:4px;background:#fff;border-radius:50%;box-shadow:0 2px 5px #0002;transition:.18s}.switch input:checked+.slider{background:var(--purple)}.switch input:checked+.slider:before{transform:translateX(22px)}.field{display:grid;gap:6px}.field label{font-weight:800;font-size:.88rem}.field input,.field select{width:100%;border:1px solid #bbb5cf;background:#fff;color:var(--ink);padding:10px 11px;border-radius:11px}.fields-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.btn{border:0;border-bottom:3px solid var(--purple2);background:var(--purple);color:#fff;font-weight:900;border-radius:12px;padding:11px 16px}.btn:hover{background:#4930b9}.btn.secondary{background:#fff;color:var(--ink);border:1px solid var(--line);border-bottom:3px solid #cbc4df}.btn.danger{background:#fff0f2;color:#a9213b;border:1px solid #f2bec8;border-bottom:3px solid #e49aaa}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:17px}.note{background:#fff4d7;border:1px solid #efcf83;border-radius:13px;padding:12px 14px;font-size:.88rem;color:#68460a}.success{background:#e6f7ed;border:1px solid #addcc2;color:#145b36}.filters{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;margin-bottom:14px}.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:15px}.data{width:100%;border-collapse:collapse;min-width:850px;background:#fff}.data th,.data td{padding:11px 12px;text-align:left;border-bottom:1px solid #eeeaf7;font-size:.88rem;vertical-align:middle}.data th{background:#f4f1ff;color:#463590;font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;position:sticky;top:0;z-index:1}.data tr:last-child td{border-bottom:0}.badge{display:inline-flex;align-items:center;border-radius:999px;padding:4px 9px;font-size:.76rem;font-weight:900;background:#eeeaf7;color:#584b77;white-space:nowrap}.badge.good{background:#e2f6ea;color:#14613a}.badge.bad{background:#ffeaee;color:#a82740}.badge.warn{background:#fff3d7;color:#79500b}.grade{font-weight:1000;font-size:1rem;color:var(--purple)}.student-list{display:grid;gap:8px;max-height:560px;overflow:auto}.student{border:1px solid var(--line);background:#fff;border-radius:14px;padding:11px 12px;text-align:left}.student.active{border-color:var(--purple);box-shadow:inset 0 0 0 1px var(--purple);background:#f8f6ff}.student strong{display:block}.student small{color:var(--muted)}.student-head{display:flex;justify-content:space-between;gap:8px}.live-dot{width:8px;height:8px;border-radius:50%;background:#bbb;margin-top:6px}.live-dot.on{background:#27a867;box-shadow:0 0 0 4px #27a8671f}.bar{height:9px;background:#ece8f5;border-radius:999px;overflow:hidden}.bar>span{display:block;height:100%;background:var(--purple)}.summary-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.summary-card{border:1px solid var(--line);border-radius:14px;padding:13px;background:#fff}.summary-card strong{font-size:1.25rem;display:block}.summary-card small{color:var(--muted)}.manual{display:grid;gap:13px}.step{display:grid;grid-template-columns:38px 1fr;gap:12px;align-items:start}.step-num{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;background:var(--lilac);color:var(--purple);font-weight:1000}.step h3{font-size:1rem;margin:3px 0 3px}.step p{color:var(--muted);font-size:.9rem}.empty{padding:30px;text-align:center;color:var(--muted)}.toast{position:fixed;right:18px;bottom:18px;max-width:360px;background:#252044;color:white;padding:13px 16px;border-radius:13px;box-shadow:0 15px 45px #0004;font-weight:800;z-index:20;display:none}.toast.show{display:block}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+@media(max-width:980px){.span-4,.span-5,.span-6,.span-7,.span-8{grid-column:span 12}.kpis{grid-template-columns:repeat(2,1fr)}.filters{grid-template-columns:1fr 1fr}.summary-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.wrap{width:min(100% - 18px,1380px)}.card{padding:16px;border-radius:17px}.kpis{grid-template-columns:1fr 1fr;gap:8px}.kpi{padding:13px}.kpi strong{font-size:1.5rem}.fields-2,.filters{grid-template-columns:1fr}.summary-grid{grid-template-columns:1fr 1fr}.toolbar{overflow:auto;flex-wrap:nowrap;padding-bottom:4px}.tab{white-space:nowrap}.top{padding-top:18px}.brand p{font-size:.82rem}}
+</style>
 </head>
 <body>
-
-<div id="app-container">
-    <div id="screen-login" class="screen active">
-        <h1>Aprendamos jugando</h1>
-        <h1 style="color: var(--warning); margin-bottom: 20px;">a multiplicar</h1>
-        
-        <div class="login-card">
-            <h3 style="margin-bottom: 5px; color: var(--text-main);">Identificación</h3>
-            <p style="text-align: center; color: var(--text-light); font-size: 0.8rem; margin-bottom: 12px;">Ingresa tu documento completo.</p>
-            <input type="text" inputmode="numeric" id="player-id" placeholder="Ej: 1234567890" autocomplete="off">
-            <p id="login-error" style="color:var(--danger); font-size:0.8rem; text-align:center; margin-top:5px; display:none;"></p>
-            <button class="btn-primary" style="width: 100%; margin-top: 12px;" id="btn-start" onclick="iniciarJuego()">¡Empezar!</button>
-            <div id="login-loader" class="loader" style="margin-top: 15px;"></div>
-        </div>
-        <p style="margin-top: 25px; color: white; font-size: 0.75rem; text-align: center; font-weight: 500;">Aplicativo creado por Oscar Barrientos</p>
+<header class="top">
+  <div class="wrap">
+    <div class="top-row">
+      <div class="brand"><div class="mark">×</div><div><h1>Panel de Control Docente</h1><p>Tablas de multiplicar · seguimiento y configuración en tiempo real</p></div></div>
+      <div class="status"><span id="firebaseDot" class="dot"></span><span id="firebaseStatus">Conectando con Firebase…</span></div>
     </div>
-
-    <div id="screen-game" class="screen">
-        <div class="game-header">
-            <div class="stats-badge">Tabla del <span id="ui-level">1</span></div>
-            <div class="stats-badge">🎓 Nota: <strong id="ui-nota">5.0</strong></div>
-        </div>
-        <div class="timer-container">
-            <div id="ui-timer-bar" class="timer-bar"></div>
-        </div>
-        <div class="question-card" id="question-card">
-            <div id="feedback-message"></div>
-            <div style="font-size: 0.9rem; color: var(--text-light); font-weight: bold;">Multiplica</div>
-            <div class="math-problem" id="ui-problem">? x ?</div>
-            <div class="progress-container" id="ui-progress"></div>
-        </div>
-        
-        <div class="answer-container" id="ui-options">
-            <input type="number" inputmode="numeric" id="answer-input" placeholder="?" autocomplete="off" onkeydown="if(event.key === 'Enter') checkTypedAnswer()">
-            <button class="btn-primary submit-btn" id="btn-submit" onclick="checkTypedAnswer()">Comprobar</button>
-        </div>
-
-        <div class="controls-footer">
-            <button class="btn-secondary" onclick="toggleMute()" id="btn-mute">🔊 Sonido</button>
-        </div>
+    <nav class="toolbar" aria-label="Secciones del panel">
+      <button class="tab active" data-view="resumen">Resumen</button>
+      <button class="tab" data-view="configuracion">Configuración</button>
+      <button class="tab" data-view="estudiantes">Estudiantes</button>
+      <button class="tab" data-view="tablas">Rendimiento por tabla</button>
+      <button class="tab" data-view="manual">Manual</button>
+    </nav>
+  </div>
+</header>
+<main class="main wrap">
+  <section id="view-resumen" class="view active">
+    <div class="kpis">
+      <div class="kpi"><strong id="kpiStudents">0</strong><span>estudiantes registrados</span></div>
+      <div class="kpi good"><strong id="kpiAccuracy">0%</strong><span>precisión general</span></div>
+      <div class="kpi"><strong id="kpiRounds">0</strong><span>rondas completas</span></div>
+      <div class="kpi warn"><strong id="kpiLive">0</strong><span>activos recientemente</span></div>
     </div>
+    <div class="grid">
+      <article class="card span-8"><h2>Actividad reciente</h2><p class="sub">Las respuestas aparecen mientras el estudiante juega.</p><div id="recentTable"></div></article>
+      <article class="card span-4"><h2>Áreas de mejora</h2><p class="sub">Tablas con menor precisión acumulada.</p><div id="improvement"></div></article>
+    </div>
+  </section>
 
-    <div id="screen-level-complete" class="screen" style="justify-content: center; align-items: center; background: #e8f5e9;">
-        <h2 style="color: var(--primary-dark); margin-bottom: 10px;">¡Tabla Finalizada! 🎉</h2>
-        <div class="login-card" style="text-align: center; margin-bottom: 20px;">
-            <p>Nota en la Tabla <span id="ui-completed-table"></span>:</p>
-            <p style="font-size: 3rem; font-weight: bold; color: var(--primary-dark);" id="ui-level-nota">5.0</p>
+  <section id="view-configuracion" class="view">
+    <div class="grid">
+      <article class="card span-6">
+        <h2>Configuración general del grupo</h2><p class="sub">Se aplica a todos, salvo que un estudiante tenga una configuración individual.</p>
+        <div class="control-row"><div><strong>Temporizador</strong><small>Activa o desactiva el límite de tiempo.</small></div><label class="switch"><input id="globalTimerEnabled" type="checkbox"><span class="slider"></span></label></div>
+        <div class="control-row"><div><strong>Segundos por pregunta</strong><small>Entre 5 y 120 segundos.</small></div><div class="field" style="width:120px"><input id="globalTimerSeconds" type="number" min="5" max="120" step="1" value="30"></div></div>
+        <div class="control-row"><div><strong>Permitir reintentos</strong><small>Si se desactiva, una actividad completada no puede repetirse.</small></div><label class="switch"><input id="globalRetry" type="checkbox"><span class="slider"></span></label></div>
+        <div class="control-row"><div><strong>Modo de juego</strong><small>Puede dejar libre la elección o forzar un modo para todo el grupo.</small></div><div class="field" style="min-width:190px"><select id="globalMode"><option value="choice">Elección del estudiante</option><option value="direct">Modo directo</option><option value="random">Modo aleatorio</option></select></div></div>
+        <div class="control-row"><div><strong>Selección de tablas</strong><small><b>Libre:</b> el estudiante escoge la tabla. <b>Progresivo:</b> empieza en la tabla del 1 y debe lograr 8/10 para avanzar a la siguiente.</small></div><div class="field" style="min-width:210px"><select id="globalTableAccess"><option value="choice">Elección libre</option><option value="progressive">Progreso obligatorio 1 → 10</option></select></div></div>
+        <div class="actions"><button id="saveGlobal" class="btn">Guardar configuración general</button></div>
+      </article>
+
+      <article class="card span-6">
+        <h2>Configuración individual</h2><p class="sub">Seleccione un estudiante para adaptar sus condiciones sin afectar al resto.</p>
+        <div class="field"><label for="individualStudent">Estudiante</label><select id="individualStudent"><option value="">Seleccione…</option></select></div>
+        <div id="individualControls" style="margin-top:14px;opacity:.55;pointer-events:none">
+          <div class="control-row"><div><strong>Temporizador individual</strong><small>Desmarque “usar general” para personalizar.</small><label style="display:block;margin-top:7px;font-size:.83rem"><input id="useGlobalTimer" type="checkbox" checked> Usar configuración general</label></div><label class="switch"><input id="individualTimerEnabled" type="checkbox"><span class="slider"></span></label></div>
+          <div class="control-row"><div><strong>Segundos por pregunta</strong></div><div class="field" style="width:120px"><input id="individualTimerSeconds" type="number" min="5" max="120" value="30"></div></div>
+          <div class="control-row"><div><strong>Reintentos</strong><label style="display:block;margin-top:7px;font-size:.83rem"><input id="useGlobalRetry" type="checkbox" checked> Usar configuración general</label></div><label class="switch"><input id="individualRetry" type="checkbox"><span class="slider"></span></label></div>
+          <div class="control-row"><div><strong>Modo</strong><label style="display:block;margin-top:7px;font-size:.83rem"><input id="useGlobalMode" type="checkbox" checked> Usar configuración general</label></div><div class="field" style="min-width:190px"><select id="individualMode"><option value="choice">Elección del estudiante</option><option value="direct">Modo directo</option><option value="random">Modo aleatorio</option></select></div></div>
+          <div class="control-row"><div><strong>Selección de tablas</strong><small>En progresivo, este estudiante empieza en 1 y avanza con 8/10.</small><label style="display:block;margin-top:7px;font-size:.83rem"><input id="useGlobalTableAccess" type="checkbox" checked> Usar configuración general</label></div><div class="field" style="min-width:210px"><select id="individualTableAccess"><option value="choice">Elección libre</option><option value="progressive">Progreso obligatorio 1 → 10</option></select></div></div>
+          <div class="actions"><button id="saveIndividual" class="btn">Guardar configuración individual</button><button id="clearIndividual" class="btn secondary">Volver a configuración general</button></div>
         </div>
-        <button class="btn-primary" style="width: 100%;" onclick="irASiguienteTabla()">Continuar ➡️</button>
+      </article>
+      <article class="card span-12"><div class="note"><strong>Nota pedagógica:</strong> la calificación se calcula solo en este panel: 0,5 puntos por respuesta correcta, máximo 5,0. El juego del estudiante sigue mostrando aciertos y retroalimentación, pero no muestra esta nota numérica.</div></article>
     </div>
+  </section>
 
-    <div id="screen-final" class="screen" style="justify-content: center; align-items: center; background: #fff8e1;">
-        <h1 style="color: var(--warning-dark); margin-bottom: 15px;">¡CAMPEÓN! 🏆</h1>
-        <h3 style="margin-bottom: 25px;">Has completado el desafío (1-9).</h3>
-        <button class="btn-primary" style="width: 100%;" onclick="reiniciarApp()">Terminar 🏠</button>
+  <section id="view-estudiantes" class="view">
+    <div class="grid">
+      <aside class="card span-4"><h2>Estudiantes</h2><p class="sub">Muestra el listado institucional completo, hayan jugado o no. La actividad se agrega cuando cada estudiante ingresa.</p><div class="field" style="margin-bottom:12px"><input id="studentSearch" placeholder="Buscar por nombre…"></div><div id="studentList" class="student-list"></div></aside>
+      <article class="card span-8"><h2 id="studentTitle">Detalle del estudiante</h2><p id="studentSubtitle" class="sub">Seleccione un estudiante.</p><div id="studentDetail" class="empty">Aquí aparecerán sus rondas, respuestas y notas.</div></article>
     </div>
+  </section>
 
-    <div id="screen-closed" class="screen" style="justify-content: center; align-items: center; background: #ffebee;">
-        <h1 style="color: var(--danger-dark); margin-bottom: 20px;">🔒 Actividad Cerrada</h1>
-        <div class="login-card" style="text-align: center;">
-            <p style="color: var(--text-main); font-size: 1.1rem; margin-bottom: 10px; font-weight: bold;">El profesor ha cerrado esta actividad.</p>
-            <p style="color: var(--text-light); font-size: 0.9rem;">Ya no se aceptan más respuestas en este momento. Revisa con tu docente.</p>
+  <section id="view-tablas" class="view">
+    <article class="card"><h2>Resumen de rendimiento por tabla</h2><p class="sub">Incluye preguntas directas y aleatorias, agrupadas por el primer factor de cada multiplicación.</p><div id="tableSummary"></div></article>
+  </section>
+
+  <section id="view-manual" class="view">
+    <div class="grid">
+      <article class="card span-7"><h2>Manual de uso</h2><p class="sub">Procedimiento recomendado para el trabajo en aula.</p>
+        <div class="manual">
+          <div class="step"><div class="step-num">1</div><div><h3>Abra primero este panel</h3><p>Compruebe que el indicador superior diga “Firebase conectado”. El panel comenzará a escuchar estudiantes, respuestas y configuraciones.</p></div></div>
+          <div class="step"><div class="step-num">2</div><div><h3>Defina la configuración general</h3><p>Active o desactive el temporizador, elija los segundos por pregunta, decida si permite reintentos, determine el modo y elija si las tablas serán de selección libre o de progreso obligatorio del 1 al 10.</p></div></div>
+          <div class="step"><div class="step-num">3</div><div><h3>Personalice cuando sea necesario</h3><p>En “Configuración individual”, elija cualquier estudiante del listado, aunque todavía no haya jugado, y desmarque “Usar configuración general” únicamente en los aspectos que quiera adaptar.</p></div></div>
+          <div class="step"><div class="step-num">4</div><div><h3>Los estudiantes ingresan al juego controlado</h3><p>Al entrar, el juego vincula su documento con el listado del panel. Si está activo el progreso obligatorio, comenzará en la tabla del 1 y necesitará 8 de 10 aciertos para avanzar.</p></div></div>
+          <div class="step"><div class="step-num">5</div><div><h3>Observe el desempeño en tiempo real</h3><p>El resumen muestra rondas, aciertos, precisión y actividad reciente. En “Estudiantes” puede revisar cada respuesta y la nota docente sobre 5,0.</p></div></div>
+          <div class="step"><div class="step-num">6</div><div><h3>Interprete las áreas de mejora</h3><p>“Rendimiento por tabla” agrupa cada pregunta por tabla y destaca las que tienen menor precisión. Úselo para decidir qué tablas conviene reforzar.</p></div></div>
+          <div class="step"><div class="step-num">7</div><div><h3>Resetee un estudiante cuando sea necesario</h3><p>En “Estudiantes”, abra su detalle y pulse <b>Resetear estudiante</b>. Se borran sus resultados del panel y, la próxima vez que el juego reciba la orden, comienza nuevamente desde cero. El estudiante permanece en el listado institucional.</p></div></div>
         </div>
+      </article>
+      <article class="card span-5"><h2>Reglas de evaluación</h2><p class="sub">Criterio configurado para cada ronda.</p><div class="summary-grid" style="grid-template-columns:1fr 1fr"><div class="summary-card"><strong>10</strong><small>preguntas por ronda</small></div><div class="summary-card"><strong>0,5</strong><small>puntos por acierto</small></div><div class="summary-card"><strong>5,0</strong><small>nota máxima</small></div><div class="summary-card"><strong>80%</strong><small>referencia de dominio</small></div></div><div class="note" style="margin-top:16px">La nota se deriva de los aciertos: <b>aciertos × 0,5</b>. Ejemplo: 8 aciertos = 4,0.</div></article>
     </div>
-
-    <div id="modal-instructions" class="modal-overlay">
-        <div class="modal-content">
-            <h2 style="color: var(--danger-dark); margin-bottom: 10px; font-size: 1.2rem;">⚠️ ¡ATENCIÓN!</h2>
-            <div style="font-size: 0.8rem; line-height: 1.2; color: var(--text-main); text-align: left;">
-                <p style="margin-bottom: 5px;">📘 <strong>1.</strong> Escribe la respuesta correcta.</p>
-                <p style="margin-bottom: 5px;">🎮 <strong>2.</strong> Tómalo como un juego.</p>
-                <p style="margin-bottom: 5px;">🔒 <strong>3.</strong> Cada tabla se responde una sola vez.</p>
-                <p style="margin-bottom: 5px;">⏳ <strong>4.</strong> Tienes 8 segundos por pregunta.</p>
-                <p style="margin-bottom: 5px;">🙋‍♂️ <strong>5.</strong> Si hay dudas, avísale al profe.</p>
-                <p>⭐ <strong>6.</strong> Cada error resta 0.5 puntos.</p>
-            </div>
-            <button class="btn-primary" style="width: 100%; margin-top: 15px; padding: 10px;" onclick="cerrarOverlayYEmpezar()">¡Entendido, Empezar!</button>
-        </div>
-    </div>
-</div>
+  </section>
+</main>
+<div id="toast" class="toast" role="status"></div>
 
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
+import { getFirestore, collection, doc, onSnapshot, setDoc, getDoc, deleteDoc, deleteField, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyB8BZNYGCSHTZuGir8wIBArqdI8PpXffBA",
-        authDomain: "juegosymas-ad2b3.firebaseapp.com",
-        projectId: "juegosymas-ad2b3",
-        storageBucket: "juegosymas-ad2b3.firebasestorage.app",
-        messagingSenderId: "363026419869",
-        appId: "1:363026419869:web:993df067cd341fcc0a0474"
-    };
+const firebaseConfig={
+  apiKey:"AIzaSyB2MJ-jdwQeT6sOfZ21tCrFYzGiuTNOAJ8",
+  authDomain:"diariodeprocesos-6f78d.firebaseapp.com",
+  projectId:"diariodeprocesos-6f78d"
+};
+const app=initializeApp(firebaseConfig);const db=getFirestore(app);
+const $=id=>document.getElementById(id);const $$=s=>[...document.querySelectorAll(s)];
+const defaults={timerEnabled:true,timerSeconds:30,allowRetry:true,forcedMode:'choice',tableAccess:'choice'};
+const ROSTER=[
+  {id:'1044990151',name:'ANTHONY GUTIERREZ MUÑOZ'},
+  {id:'1042155626',name:'MARTINEZ ARANGO AYLYN'},
+  {id:'1041636979',name:'OSORIO MUÑOZ JERONIMO'},
+  {id:'1041636870',name:'GONZALEZ BETANCUR MARIA JOSE'},
+  {id:'1041636841',name:'VARELAS BARRIENTOS LUCIANA'},
+  {id:'1041636641',name:'MARTINEZ MARTINEZ SEBASTIAN'},
+  {id:'1035922719',name:'MOLINA OCHOA BELEN'},
+  {id:'1200214182',name:'GUADALUPE PEREZ MUÑOZ'},
+  {id:'1044507556',name:'RADAMEL DANILO ZULETA ALVEREZ'},
+  {id:'1044989674',name:'GUERRERO DELGADO HELLEN GABRIELA'},
+  {id:'1067959648',name:'PACHECO BARRERA JOSE DANIEL'},
+  {id:'1032328826',name:'LOPERA CADAVID LUCIANA'},
+  {id:'1042155250',name:'CASAS FERNANDEZ ANTONELLA'},
+  {id:'1035801483',name:'RESTREPO VILLA DILMER FELIPE'},
+  {id:'1157463842',name:'BERRIO CORREA VALENTINA'},
+  {id:'1038213324',name:'GUZMAN CORREA DYLAN'},
+  {id:'1041636021',name:'VARELAS BARRIENTOS MAXIMILIANO'}
+];
+let globalConfig={...defaults},students=new Map(),remoteStudents=new Map(),rounds=new Map(),studentConfigs=new Map(),selectedStudent='';
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const VERSION_APP = 9; 
-    const ESTUDIANTES = { "1032328826": "Luciana Lopera Cadavid", "1035922719": "Belén Molina Ochoa", "1067959648": "José Daniel Pacheco Barrera", "1042155250": "Antonella Casas Fernandez", "1035801483": "Dilmer Felipe Restrepo Villa", "1157463842": "Valentina Berrio Correa", "1038213324": "Dylan Guzman Correa", "1041636021": "Maximiliano Varelas Barrientos", "1072263423": "Jesús David Medina Polo" };
+function toast(msg){$('toast').textContent=msg;$('toast').classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>$('toast').classList.remove('show'),2600)}
+function setStatus(text,type=''){ $('firebaseStatus').textContent=text;$('firebaseDot').className='dot '+type; }
+function ts(v){if(!v)return 0;if(typeof v==='number')return v;if(v.toMillis)return v.toMillis();if(v.seconds)return v.seconds*1000;return 0}
+function fmtDate(v){const n=ts(v)||Number(v)||0;return n?new Date(n).toLocaleString('es-CO',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'—'}
+function modeLabel(v){return v==='direct'?'Directo':v==='random'?'Aleatorio':'Libre'}
+function gradeLabel(s){return s?.grade===null||s?.grade===undefined||s?.grade===''?'Grado sin registrar':`Grado ${s.grade}°`}
+function roundLabel(r){return r.mode==='direct'?`Tabla del ${r.table}`:r.level?`Aleatorio · Nivel ${r.level}`:'Aleatorio · Todas'}
+function grade(r){return Math.min(5,(Number(r.correct)||0)*.5).toFixed(1).replace('.',',')}
+function completed(r){return r.status==='completed'&&Number(r.answered)===10}
+function recentStudent(s){const t=ts(s.lastSeen)||0;return t&&Date.now()-t<5*60*1000}
+function allRounds(){return [...rounds.values()].sort((a,b)=>(ts(b.updatedAt)||b.updatedAtClient||0)-(ts(a.updatedAt)||a.updatedAtClient||0))}
+function norm(v){return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Za-z0-9]/g,'').toLowerCase()}
+function rebuildStudents(){
+  const merged=new Map(ROSTER.map(s=>[s.id,{...s,grade:null,roster:true}]));
+  for(const remote of remoteStudents.values()){
+    let target=merged.get(remote.id);
+    if(!target){target=[...merged.values()].find(s=>norm(s.name)===norm(remote.name));}
+    if(target){merged.set(target.id,{...target,...remote,id:target.id,name:target.name||remote.name,roster:true});}
+    else merged.set(remote.id,{...remote,id:remote.id,roster:false});
+  }
+  students=merged;
+}
+function byStudent(id){const s=students.get(id),nameKey=norm(s?.name);return allRounds().filter(r=>r.studentId===id||(nameKey&&norm(r.studentName)===nameKey))}
 
-    let state = {
-        user: null, nivelActual: 1, notaActual: 5.0, count: 0, history: [], 
-        currentQ: {}, lastMult: -1, timeLeft: 8, timer: null, muted: false, processing: false
-    };
+$$('.tab').forEach(b=>b.onclick=()=>{ $$('.tab').forEach(x=>x.classList.toggle('active',x===b));$$('.view').forEach(v=>v.classList.toggle('active',v.id==='view-'+b.dataset.view));if(b.dataset.view==='tablas')renderTableSummary(); });
 
-    // Escuchar el estado de la actividad en tiempo real
-    const configRef = doc(db, 'configuracion', 'juego_multiplicaciones');
-    onSnapshot(configRef, (docSnap) => {
-        if (docSnap.exists() && docSnap.data().actividadAbierta === false) {
-            // Si el profesor cierra, bloqueamos todo inmediatamente
-            state.processing = true; 
-            if (state.timer) { clearInterval(state.timer); state.timer = null; }
-            document.getElementById('modal-instructions').classList.remove('active');
-            showScreen('screen-closed');
-        } else {
-            // Si el profesor la vuelve a abrir y estaban en la pantalla de bloqueo, recargamos la app
-            if (document.getElementById('screen-closed').classList.contains('active')) {
-                location.reload();
-            }
-        }
-    });
+async function ensureGlobal(){const ref=doc(db,'multiplicaControl','global');const snap=await getDoc(ref);if(!snap.exists())await setDoc(ref,{...defaults,updatedAt:serverTimestamp()});}
 
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    function playSnd(type) {
-        if (state.muted) return; 
-        try {
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination);
-            const n = audioCtx.currentTime;
-            if (type==='ok'){ o.type='sine'; o.frequency.setValueAtTime(600,n); g.gain.setValueAtTime(0.2,n); o.start(); o.stop(n+0.1); }
-            else if (type==='err'){ o.type='sawtooth'; o.frequency.setValueAtTime(200,n); g.gain.setValueAtTime(0.2,n); o.start(); o.stop(n+0.2); }
-            else if (type==='win'){ o.type='triangle'; o.frequency.setValueAtTime(400,n); o.frequency.setValueAtTime(600,n+0.1); g.gain.setValueAtTime(0.2,n); o.start(); o.stop(n+0.4); }
-        } catch(e) { }
-    }
+onSnapshot(doc(db,'multiplicaControl','global'),snap=>{globalConfig={...defaults,...(snap.exists()?snap.data():{})};renderGlobalConfig();setStatus('Firebase conectado','ok');},err=>{console.error(err);setStatus('Error de conexión','bad');});
+onSnapshot(collection(db,'multiplicaAlumnos'),snap=>{remoteStudents.clear();snap.forEach(d=>remoteStudents.set(d.id,{id:d.id,...d.data()}));rebuildStudents();renderAll();},err=>{console.error(err);rebuildStudents();renderAll();setStatus('No se pueden leer actividad de estudiantes','bad');});
+onSnapshot(collection(db,'multiplicaRondas'),snap=>{rounds.clear();snap.forEach(d=>rounds.set(d.id,{docId:d.id,...d.data()}));renderAll();},err=>{console.error(err);setStatus('No se pueden leer resultados','bad');});
+onSnapshot(collection(db,'multiplicaControlEstudiantes'),snap=>{studentConfigs.clear();snap.forEach(d=>studentConfigs.set(d.id,d.data()));renderIndividualForSelection();},err=>console.error(err));
+ensureGlobal().catch(e=>{console.error(e);setStatus('No se pudo inicializar Firebase','bad')});
 
-    window.iniciarJuego = async function() {
-        const idField = document.getElementById('player-id');
-        const id = idField.value.replace(/\D/g, '');
-        
-        idField.blur(); 
+function renderGlobalConfig(){ $('globalTimerEnabled').checked=!!globalConfig.timerEnabled;$('globalTimerSeconds').value=globalConfig.timerSeconds||30;$('globalRetry').checked=globalConfig.allowRetry!==false;$('globalMode').value=globalConfig.forcedMode||'choice';$('globalTableAccess').value=globalConfig.tableAccess||'choice'; }
+$('saveGlobal').onclick=async()=>{const seconds=Math.max(5,Math.min(120,Number($('globalTimerSeconds').value)||30));await setDoc(doc(db,'multiplicaControl','global'),{timerEnabled:$('globalTimerEnabled').checked,timerSeconds:seconds,allowRetry:$('globalRetry').checked,forcedMode:$('globalMode').value,tableAccess:$('globalTableAccess').value,updatedAt:serverTimestamp()},{merge:true});toast('Configuración general guardada');};
 
-        if (!ESTUDIANTES[id]) { 
-            const e = document.getElementById('login-error'); e.textContent = "ID no válido."; e.style.display = 'block'; return; 
-        }
-        
-        document.getElementById('btn-start').style.display = 'none';
-        document.getElementById('login-loader').style.display = 'block';
-        
-        await fetchUser(id, ESTUDIANTES[id]);
-        document.getElementById('login-loader').style.display = 'none';
+function renderStudentSelect(){const current=$('individualStudent').value;const list=[...students.values()].sort((a,b)=>(a.name||'').localeCompare(b.name||''));$('individualStudent').innerHTML='<option value="">Seleccione…</option>'+list.map(s=>`<option value="${escapeAttr(s.id)}">${escapeHtml(s.name||'Estudiante')} · ${escapeHtml(gradeLabel(s))}</option>`).join('');if(list.some(s=>s.id===current))$('individualStudent').value=current;}
+$('individualStudent').onchange=()=>{selectedStudent=$('individualStudent').value;renderIndividualForSelection()};
+function renderIndividualForSelection(){const id=$('individualStudent').value;const box=$('individualControls');box.style.opacity=id?'1':'.55';box.style.pointerEvents=id?'auto':'none';if(!id)return;const c=studentConfigs.get(id)||{};const hasTimer=('timerEnabled' in c)||('timerSeconds' in c);const hasRetry='allowRetry' in c;const hasMode='forcedMode' in c;const hasTableAccess='tableAccess' in c;$('useGlobalTimer').checked=!hasTimer;$('individualTimerEnabled').checked=('timerEnabled'in c)?!!c.timerEnabled:!!globalConfig.timerEnabled;$('individualTimerSeconds').value=('timerSeconds'in c)?c.timerSeconds:globalConfig.timerSeconds;$('useGlobalRetry').checked=!hasRetry;$('individualRetry').checked=('allowRetry'in c)?!!c.allowRetry:!!globalConfig.allowRetry;$('useGlobalMode').checked=!hasMode;$('individualMode').value=('forcedMode'in c)?c.forcedMode:globalConfig.forcedMode;$('useGlobalTableAccess').checked=!hasTableAccess;$('individualTableAccess').value=('tableAccess'in c)?c.tableAccess:(globalConfig.tableAccess||'choice');syncIndividualDisabled();}
+function syncIndividualDisabled(){const gT=$('useGlobalTimer').checked;$('individualTimerEnabled').disabled=gT;$('individualTimerSeconds').disabled=gT;$('individualRetry').disabled=$('useGlobalRetry').checked;$('individualMode').disabled=$('useGlobalMode').checked;$('individualTableAccess').disabled=$('useGlobalTableAccess').checked;}
+['useGlobalTimer','useGlobalRetry','useGlobalMode','useGlobalTableAccess'].forEach(id=>$(id).onchange=syncIndividualDisabled);
+$('saveIndividual').onclick=async()=>{const id=$('individualStudent').value;if(!id)return;const payload={updatedAt:serverTimestamp()};if($('useGlobalTimer').checked){payload.timerEnabled=deleteField();payload.timerSeconds=deleteField()}else{payload.timerEnabled=$('individualTimerEnabled').checked;payload.timerSeconds=Math.max(5,Math.min(120,Number($('individualTimerSeconds').value)||30))}if($('useGlobalRetry').checked)payload.allowRetry=deleteField();else payload.allowRetry=$('individualRetry').checked;if($('useGlobalMode').checked)payload.forcedMode=deleteField();else payload.forcedMode=$('individualMode').value;if($('useGlobalTableAccess').checked)payload.tableAccess=deleteField();else payload.tableAccess=$('individualTableAccess').value;await setDoc(doc(db,'multiplicaControlEstudiantes',id),payload,{merge:true});toast('Configuración individual guardada');};
+$('clearIndividual').onclick=async()=>{const id=$('individualStudent').value;if(!id)return;await setDoc(doc(db,'multiplicaControlEstudiantes',id),{timerEnabled:deleteField(),timerSeconds:deleteField(),allowRetry:deleteField(),forcedMode:deleteField(),tableAccess:deleteField(),updatedAt:serverTimestamp()},{merge:true});toast('El estudiante vuelve a la configuración general');};
 
-        if (state.user.nivelMaximo > 9) { showScreen('screen-final'); return; }
-        
-        state.nivelActual = state.user.nivelMaximo;
-        document.getElementById('modal-instructions').classList.add('active');
-    };
-
-    async function fetchUser(id, name) {
-        let local = JSON.parse(localStorage.getItem(`estudiante_${id}`));
-        let cloud = null;
-        if (db) {
-            try {
-                const fetchPromise = getDoc(doc(db, 'multiplicaciones', id));
-                const timeoutPromise = new Promise(resolve => setTimeout(() => resolve(null), 3000));
-                const docSnap = await Promise.race([fetchPromise, timeoutPromise]);
-                if (docSnap && docSnap.exists && docSnap.exists()) {
-                    cloud = docSnap.data();
-                }
-            } catch(e) { }
-        }
-
-        const def = { id, nombre: name, nivelMaximo: 1, notasPorTabla: {}, appVersion: VERSION_APP, lastTeacherUpdate: 0 };
-        if (!local || local.appVersion !== VERSION_APP) local = def;
-        if (!cloud || cloud.appVersion !== VERSION_APP) cloud = def;
-
-        if (cloud.lastTeacherUpdate > local.lastTeacherUpdate) {
-            state.user = cloud;
-        } else {
-            state.user = local;
-            if (cloud.notasPorTabla) Object.assign(state.user.notasPorTabla, cloud.notasPorTabla);
-            state.user.nivelMaximo = Math.max(local.nivelMaximo, cloud.nivelMaximo);
-        }
-        
-        if (!state.user.notasPorTabla) state.user.notasPorTabla = {};
-        
-        try { localStorage.setItem(`estudiante_${id}`, JSON.stringify(state.user)); } catch(e){}
-    }
-
-    function showScreen(id) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-    }
-
-    window.cerrarOverlayYEmpezar = function() {
-        document.getElementById('modal-instructions').classList.remove('active');
-        showScreen('screen-game');
-        setTimeout(startTable, 400); 
-    };
-
-    function startTable() {
-        state.notaActual = 5.0; state.count = 0; state.history = []; state.lastMult = -1;
-        document.getElementById('ui-level').textContent = state.nivelActual;
-        updateUI();
-        nextQ();
-    }
-
-    function nextQ() {
-        state.processing = false;
-        
-        const inputField = document.getElementById('answer-input');
-        const submitBtn = document.getElementById('btn-submit');
-        inputField.value = "";
-        inputField.className = "";
-        inputField.readOnly = false; 
-        submitBtn.disabled = false;
-
-        let m; 
-        do { m = Math.floor(Math.random() * 10) + 1; } while (m === state.lastMult);
-        state.lastMult = m;
-
-        const ans = state.nivelActual * m;
-        document.getElementById('ui-problem').textContent = `${state.nivelActual} x ${m}`;
-        state.currentQ = { ans };
-
-        startTimer();
-        
-        if(document.activeElement !== inputField) {
-            inputField.focus();
-        }
-    }
-
-    function startTimer() {
-        if (state.timer) { clearInterval(state.timer); state.timer = null; }
-        
-        state.timeLeft = 8.0;
-        const bar = document.getElementById('ui-timer-bar');
-        bar.style.width = '100%';
-        
-        state.timer = setInterval(() => {
-            if (state.processing) { clearInterval(state.timer); state.timer = null; return; }
-            state.timeLeft -= 0.1;
-            bar.style.width = (state.timeLeft / 8 * 100) + '%';
-            
-            if (state.timeLeft <= 0) { handleAns(false); }
-        }, 100);
-    }
-
-    window.checkTypedAnswer = function() {
-        if (state.processing) return;
-        const inputField = document.getElementById('answer-input');
-        
-        if(inputField.value.trim() === "") {
-            handleAns(false);
-            return;
-        }
-
-        const userAns = parseInt(inputField.value, 10);
-        const isOk = (userAns === state.currentQ.ans);
-        handleAns(isOk);
-    };
-
-    function handleAns(isOk) {
-        state.processing = true;
-        if (state.timer) { clearInterval(state.timer); state.timer = null; }
-
-        const inputField = document.getElementById('answer-input');
-        const submitBtn = document.getElementById('btn-submit');
-        
-        inputField.readOnly = true; 
-        submitBtn.disabled = true;
-
-        if (isOk) {
-            inputField.classList.add('correct');
-            playSnd('ok'); feed("¡Bien!", "var(--primary)");
-        } else {
-            inputField.classList.add('wrong');
-            inputField.value = state.currentQ.ans; 
-            playSnd('err');
-            state.notaActual = Math.max(0, state.notaActual - 0.5);
-            feed("-0.5", "var(--danger)");
-            document.getElementById('question-card').classList.add('shake');
-            setTimeout(() => document.getElementById('question-card').classList.remove('shake'), 400);
-        }
-        
-        state.history.push(isOk);
-        state.count++;
-        updateUI();
-
-        setTimeout(() => {
-            if (state.count < 10) nextQ();
-            else finishTable();
-        }, 1400);
-    }
-
-    function finishTable() {
-        document.getElementById('answer-input').blur();
-
-        try {
-            if (!state.user.notasPorTabla) state.user.notasPorTabla = {};
-            state.user.notasPorTabla[state.nivelActual] = state.notaActual;
-            state.user.nivelMaximo++;
-            
-            try { localStorage.setItem(`estudiante_${state.user.id}`, JSON.stringify(state.user)); } catch(e){}
-
-            if (db) {
-                try {
-                    setDoc(doc(db, 'multiplicaciones', String(state.user.id)), state.user, { merge: true }).catch(() => {});
-                } catch(e){}
-            }
-            
-            playSnd('win');
-            document.getElementById('ui-completed-table').textContent = state.nivelActual;
-            document.getElementById('ui-level-nota').textContent = state.notaActual.toFixed(1);
-            showScreen('screen-level-complete');
-        } catch(error) {
-            console.error("Error al finalizar:", error);
-            showScreen('screen-level-complete');
-        }
-    }
-
-    window.irASiguienteTabla = function() {
-        if (state.user.nivelMaximo > 9) {
-            showScreen('screen-final');
-        } else {
-            state.nivelActual = state.user.nivelMaximo;
-            showScreen('screen-game');
-            setTimeout(startTable, 300);
-        }
-    };
-
-    function updateUI() {
-        document.getElementById('ui-nota').textContent = state.notaActual.toFixed(1);
-        const d = document.getElementById('ui-progress'); d.innerHTML = "";
-        for (let i=0; i<10; i++) {
-            const dot = document.createElement('div');
-            dot.className = 'progress-dot' + (i < state.history.length ? (state.history[i] ? ' fill-correct' : ' fill-wrong') : '');
-            d.appendChild(dot);
-        }
-    }
-
-    function feed(t, c) {
-        const f = document.getElementById('feedback-message');
-        f.textContent = t; f.style.color = c;
-        f.classList.remove('float-anim'); void f.offsetWidth; f.classList.add('float-anim');
-    }
-
-    window.toggleMute = function() { state.muted = !state.muted; document.getElementById('btn-mute').textContent = state.muted ? '🔇' : '🔊 Sonido'; };
-    window.reiniciarApp = () => location.reload();
+$('studentSearch').oninput=renderStudentList;
+function renderAll(){renderStudentSelect();renderSummary();renderStudentList();renderTableSummary();if(selectedStudent&&students.has(selectedStudent))renderStudentDetail(selectedStudent);}
+function renderSummary(){const rs=allRounds(),answers=rs.flatMap(r=>Array.isArray(r.answers)?r.answers:[]),correct=answers.filter(a=>a.correct).length;const complete=rs.filter(completed).length;$('kpiStudents').textContent=students.size;$('kpiAccuracy').textContent=answers.length?Math.round(correct/answers.length*100)+'%':'0%';$('kpiRounds').textContent=complete;$('kpiLive').textContent=[...students.values()].filter(recentStudent).length;renderRecent(rs);renderImprovement(answers);}
+function renderRecent(rs){const top=rs.slice(0,12);if(!top.length){$('recentTable').innerHTML='<div class="empty">Aún no hay rondas registradas.</div>';return}$('recentTable').innerHTML=`<div class="table-wrap"><table class="data"><thead><tr><th>Estudiante</th><th>Actividad</th><th>Avance</th><th>Aciertos</th><th>Precisión</th><th>Nota docente</th><th>Actualización</th></tr></thead><tbody>${top.map(r=>`<tr><td><b>${escapeHtml(r.studentName||students.get(r.studentId)?.name||'Estudiante')}</b></td><td>${escapeHtml(roundLabel(r))}</td><td><span class="badge ${completed(r)?'good':'warn'}">${completed(r)?'Terminada':`${Number(r.answered)||0}/10`}</span></td><td>${Number(r.correct)||0}/${Number(r.answered)||0}</td><td>${Number(r.accuracy)||0}%</td><td><span class="grade">${grade(r)}</span></td><td>${fmtDate(r.updatedAt||r.updatedAtClient)}</td></tr>`).join('')}</tbody></table></div>`;}
+function tableStats(){const stats={};for(let n=1;n<=10;n++)stats[n]={table:n,answered:0,correct:0};for(const r of allRounds())for(const a of (r.answers||[])){const n=Number(a.a);if(n>=1&&n<=10){stats[n].answered++;if(a.correct)stats[n].correct++;}}return Object.values(stats).map(s=>({...s,accuracy:s.answered?Math.round(s.correct/s.answered*100):null}));}
+function renderImprovement(){const stats=tableStats().filter(s=>s.answered).sort((a,b)=>a.accuracy-b.accuracy).slice(0,5);if(!stats.length){$('improvement').innerHTML='<div class="empty">Aún no hay datos suficientes.</div>';return}$('improvement').innerHTML=stats.map(s=>`<div style="margin:12px 0"><div style="display:flex;justify-content:space-between;gap:10px;margin-bottom:6px"><b>Tabla del ${s.table}</b><span class="badge ${s.accuracy>=80?'good':s.accuracy>=60?'warn':'bad'}">${s.accuracy}%</span></div><div class="bar"><span style="width:${s.accuracy}%"></span></div><small style="color:var(--muted)">${s.correct} correctas de ${s.answered}</small></div>`).join('');}
+function renderStudentList(){const q=$('studentSearch').value.trim().toLowerCase();const list=[...students.values()].filter(s=>(s.name||'').toLowerCase().includes(q)).sort((a,b)=>(a.name||'').localeCompare(b.name||''));if(!list.length){$('studentList').innerHTML='<div class="empty">No hay estudiantes para mostrar.</div>';return}$('studentList').innerHTML=list.map(s=>`<button class="student ${selectedStudent===s.id?'active':''}" data-student="${escapeAttr(s.id)}"><div class="student-head"><span><strong>${escapeHtml(s.name||'Estudiante')}</strong><small>${escapeHtml(gradeLabel(s))} · ${byStudent(s.id).filter(completed).length} rondas</small></span><i class="live-dot ${recentStudent(s)?'on':''}" title="${recentStudent(s)?'Activo recientemente':'Sin actividad reciente'}"></i></div></button>`).join('');$$('[data-student]').forEach(b=>b.onclick=()=>{selectedStudent=b.dataset.student;renderStudentList();renderStudentDetail(selectedStudent)});}
+function renderStudentDetail(id){const s=students.get(id);if(!s)return;const rs=byStudent(id),ans=rs.flatMap(r=>r.answers||[]),cor=ans.filter(a=>a.correct).length,acc=ans.length?Math.round(cor/ans.length*100):0,complete=rs.filter(completed);$('studentTitle').textContent=s.name||'Estudiante';$('studentSubtitle').textContent=`${gradeLabel(s)} · ${s.lastSeen?'última actividad '+fmtDate(s.lastSeen):'aún no ha ingresado al juego'}`;const weak=tableStatsForStudent(rs).filter(x=>x.answered).sort((a,b)=>a.accuracy-b.accuracy).slice(0,3);$('studentDetail').innerHTML=`<div class="summary-grid"><div class="summary-card"><strong>${complete.length}</strong><small>rondas completas</small></div><div class="summary-card"><strong>${acc}%</strong><small>precisión total</small></div><div class="summary-card"><strong>${cor}/${ans.length}</strong><small>respuestas correctas</small></div><div class="summary-card"><strong>${weak.length?weak.map(x=>'×'+x.table).join(', '):'—'}</strong><small>tablas a reforzar</small></div><div class="summary-card"><strong>${complete.length?grade(complete[0]):'—'}</strong><small>nota ronda más reciente</small></div></div><div class="actions"><button class="btn danger" id="resetStudentBtn">↻ Resetear estudiante</button></div><div class="note" style="margin-top:10px">Resetear borra los resultados de este estudiante y ordena al juego comenzar nuevamente desde cero. <b>No lo elimina del listado.</b></div><h3 style="margin:20px 0 10px">Historial de rondas</h3>${rs.length?`<div class="table-wrap"><table class="data"><thead><tr><th>Fecha</th><th>Actividad</th><th>Estado</th><th>Aciertos</th><th>Precisión</th><th>Nota</th><th>Respuestas</th></tr></thead><tbody>${rs.map(r=>`<tr><td>${fmtDate(r.startedAt)}</td><td>${escapeHtml(roundLabel(r))}</td><td><span class="badge ${completed(r)?'good':'warn'}">${completed(r)?'Terminada':'En curso'}</span></td><td>${r.correct||0}/${r.answered||0}</td><td>${r.accuracy||0}%</td><td><span class="grade">${grade(r)}</span></td><td>${(r.answers||[]).map(a=>`<span class="badge ${a.correct?'good':'bad'}" title="${escapeAttr(`${a.a} × ${a.b}: ${a.correct?'correcta':a.timeout?'sin tiempo':'incorrecta'}`)}">${a.a}×${a.b}</span>`).join(' ')||'—'}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">Este estudiante todavía no tiene rondas.</div>'}`;$('resetStudentBtn').onclick=()=>resetStudent(id);}
+async function resetStudent(id){
+  const s=students.get(id);if(!s)return;
+  if(!confirm(`¿Resetear a ${s.name}?\n\nSe borrarán sus resultados del panel y comenzará nuevamente desde cero. El estudiante seguirá apareciendo en la lista.`))return;
+  const nameKey=norm(s.name),targets=[...rounds.values()].filter(r=>r.studentId===id||(nameKey&&norm(r.studentName)===nameKey));
+  try{
+    await Promise.all(targets.map(r=>deleteDoc(doc(db,'multiplicaRondas',r.docId))));
+    const previous=studentConfigs.get(id)||{};
+    await setDoc(doc(db,'multiplicaControlEstudiantes',id),{resetAt:serverTimestamp(),resetCounter:(Number(previous.resetCounter)||0)+1,updatedAt:serverTimestamp()},{merge:true});
+    toast('Estudiante reseteado. Su progreso vuelve a cero.');
+  }catch(e){console.error(e);alert('No se pudo completar el reseteo. Revisa la conexión o los permisos de Firebase.');}
+}
+function tableStatsForStudent(rs){const stats={};for(let n=1;n<=10;n++)stats[n]={table:n,answered:0,correct:0};for(const r of rs)for(const a of(r.answers||[])){const n=Number(a.a);if(stats[n]){stats[n].answered++;if(a.correct)stats[n].correct++;}}return Object.values(stats).map(s=>({...s,accuracy:s.answered?Math.round(s.correct/s.answered*100):0}));}
+function renderTableSummary(){const st=tableStats();$('tableSummary').innerHTML=`<div class="table-wrap"><table class="data"><thead><tr><th>Tabla</th><th>Preguntas respondidas</th><th>Correctas</th><th>Precisión</th><th>Lectura pedagógica</th></tr></thead><tbody>${st.map(s=>{const label=!s.answered?'Sin datos':s.accuracy>=80?'Dominio adecuado':s.accuracy>=60?'Conviene reforzar':'Prioridad de refuerzo';const cls=!s.answered?'':s.accuracy>=80?'good':s.accuracy>=60?'warn':'bad';return `<tr><td><b>Tabla del ${s.table}</b></td><td>${s.answered}</td><td>${s.correct}</td><td>${s.accuracy===null?'—':s.accuracy+'%'}</td><td><span class="badge ${cls}">${label}</span></td></tr>`}).join('')}</tbody></table></div>`;}
+function escapeHtml(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+function escapeAttr(v){return escapeHtml(v)}
+rebuildStudents();renderGlobalConfig();renderAll();
 </script>
 </body>
 </html>
